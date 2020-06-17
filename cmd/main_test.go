@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nzorkic/deck"
+	"github.com/nzorkic/deck/deck"
 )
 
 func TestCardsAsString(t *testing.T) {

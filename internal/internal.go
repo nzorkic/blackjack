@@ -3,7 +3,7 @@ package internal
 import (
 	"sort"
 
-	"github.com/nzorkic/deck"
+	"github.com/nzorkic/deck/deck"
 )
 
 // SortedCardsCopy move card of rank Ace to last position

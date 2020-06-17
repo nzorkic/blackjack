@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	util "github.com/nzorkic/blackjack/internal"
-	"github.com/nzorkic/deck"
+	"github.com/nzorkic/deck/deck"
 )
 
 // MaxScore is highest score player can get in Blackjack

@@ -3,7 +3,7 @@ package internal
 import (
 	"testing"
 
-	"github.com/nzorkic/deck"
+	"github.com/nzorkic/deck/deck"
 )
 
 func TestSortedCardsCopy(t *testing.T) {
