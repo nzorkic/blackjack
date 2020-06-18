@@ -90,14 +90,15 @@ func invokeAction(player *player, d *deck.Deck) {
 	fmt.Println()
 	switch playerAction {
 	case hit:
-		hitAction(player, playerAction, d)
+		hitAction(player, d)
 	case stand:
 		break
 	}
 }
 
-func hitAction(player *player, playerAction action, d *deck.Deck) {
+func hitAction(player *player, d *deck.Deck) {
 	player.cards = append(player.cards, (*d).Draw(1)...)
+	var playerAction action = hit
 	for playerAction == hit {
 		printActionChoices(player)
 		points := util.CalculatePoints(&player.cards)
