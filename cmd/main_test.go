@@ -21,7 +21,7 @@ func TestInitPoints(t *testing.T) {
 
 func TestCreatePlayers(t *testing.T) {
 	n := 3
-	players := createPlayers(n)
+	players := createPlayers(&n)
 	if len(players) != n {
 		t.Errorf("Error while creating players. Expected %d, got %d", n, len(players))
 	}
@@ -30,7 +30,7 @@ func TestCreatePlayers(t *testing.T) {
 func TestDeal(t *testing.T) {
 	nOfPlayers := 5
 	nOfCardsDealt := 2
-	players := createPlayers(nOfPlayers)
+	players := createPlayers(&nOfPlayers)
 	deck := deck.New(deck.Shuffle())
 	deal(&players, &deck)
 	if dealer.cards[1].Visible {

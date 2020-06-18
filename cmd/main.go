@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	util "github.com/nzorkic/blackjack/internal"
 	"github.com/nzorkic/deck"
@@ -32,27 +33,46 @@ func (p player) String() string {
 }
 
 func main() {
-	numOfPlayers := 1
-	players := createPlayers(numOfPlayers)
-	playingDeck := deck.New(deck.Shuffle())
-	initPoints(&playingDeck)
+	newGame()
+}
+
+func newGame() {
+	fmt.Println("#############")
+	fmt.Println("# BLACKJACK #")
+	fmt.Println("#############")
+	fmt.Println()
+	fmt.Print("Enter number of players > ")
+	var numerOfPlayers int
+	fmt.Scanln(&numerOfPlayers)
+	fmt.Println()
+	players := createPlayers(&numerOfPlayers)
+	playingDeck := createDeck(&numerOfPlayers)
 	deal(&players, &playingDeck)
 	start(&players, &playingDeck)
+	replay(&players, &playingDeck)
+}
+
+func createDeck(n *int) deck.Deck {
+	deckSize := ((*n*4)+4)/52 + 1
+	newDeck := deck.New(deck.Size(deckSize), deck.Shuffle())
+	initPoints(&newDeck)
+	return newDeck
 }
 
 func initPoints(deck *deck.Deck) {
 	(*deck).FacePoints(10)
 }
 
-func createPlayers(n int) []player {
-	players := make([]player, n)
-	for i := 0; i < n; i++ {
+func createPlayers(n *int) []player {
+	players := make([]player, *n)
+	for i := 0; i < *n; i++ {
 		players[i] = player{name: fmt.Sprintf("Player #%d", i+1)}
 	}
 	return players
 }
 
 func deal(p *[]player, deck *deck.Deck) {
+
 	playerSize := len(*p)
 	turns := 2
 	for i := 0; i < turns; i++ {
@@ -114,6 +134,48 @@ func hitAction(player *player, d *deck.Deck) {
 			player.cards = append(player.cards, (*d).Draw(1)...)
 		}
 	}
+}
+
+func replay(players *[]player, d *deck.Deck) {
+	var choice uint8
+	fmt.Println()
+	fmt.Println("Want to play another game?")
+	fmt.Println("Enter 0 for another round")
+	fmt.Println("Enter 1 for new game")
+	fmt.Println("Enter 2 to quit")
+	fmt.Print("> ")
+	fmt.Scanln(&choice)
+	switch choice {
+	case 0:
+		startNewRound(players, d)
+	case 1:
+		for k := range results {
+			delete(results, k)
+		}
+		dealer.cards = nil
+		newGame()
+	case 2:
+		os.Exit(1)
+	}
+}
+
+func startNewRound(players *[]player, d *deck.Deck) {
+	fmt.Println()
+	for k := range results {
+		delete(results, k)
+	}
+	for idx := range *players {
+		(*players)[idx].cards = nil
+	}
+	dealer.cards = nil
+	if ((len(*players) * 4) + 4) > len(*d) {
+		fmt.Println("Shuffling new deck...")
+		deckSize := ((len(*players)*4)+4)/52 + 1
+		*d = deck.New(deck.Size(deckSize), deck.Shuffle())
+	}
+	deal(players, d)
+	start(players, d)
+	replay(players, d)
 }
 
 func printScores(players *[]player) {
