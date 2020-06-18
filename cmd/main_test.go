@@ -47,7 +47,7 @@ func TestDeal(t *testing.T) {
 					player.name)
 			}
 		}
-		if results[player.name] != util.CalculatePoints(&player.cards) {
+		if player.points != util.CalculatePoints(&player.cards) {
 			t.Errorf("Final result after dealing is not correct. Expected %d, got %d",
 				util.CalculatePoints(&player.cards), results[player.name])
 		}
@@ -56,8 +56,8 @@ func TestDeal(t *testing.T) {
 		t.Errorf("Player with the name %s was dealt %d cards instead of %d",
 			dealer.name, len(dealer.cards), nOfCardsDealt)
 	}
-	if results[dealer.name] != util.CalculatePoints(&dealer.cards) {
+	if dealer.points != util.CalculatePoints(&dealer.cards) {
 		t.Errorf("Final result after dealing is not correct. Expected %d, got %d",
-			util.CalculatePoints(&dealer.cards), results[dealer.name])
+			util.CalculatePoints(&dealer.cards), dealer.points)
 	}
 }
