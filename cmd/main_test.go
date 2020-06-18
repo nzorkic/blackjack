@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	util "github.com/nzorkic/blackjack/internal"
-	"github.com/nzorkic/deck/deck"
+	"github.com/nzorkic/deck"
 )
 
 func TestInitPoints(t *testing.T) {

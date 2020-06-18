@@ -3,7 +3,7 @@ package internal
 import (
 	"testing"
 
-	"github.com/nzorkic/deck/deck"
+	"github.com/nzorkic/deck"
 )
 
 func TestCalculatePoints(t *testing.T) {

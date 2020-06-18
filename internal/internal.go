@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/nzorkic/deck/deck"
+	"github.com/nzorkic/deck"
 )
 
 // CalculatePoints calculate points from given cards
