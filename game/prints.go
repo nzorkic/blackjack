@@ -48,7 +48,6 @@ func printDealerInfoLine(dealer *player) {
 }
 
 func printFinalScore() {
-	delete(results, dealer.name)
 	for name, score := range results {
 		fmt.Printf("%s: ", name)
 		switch score {
