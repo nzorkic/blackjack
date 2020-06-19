@@ -4,8 +4,8 @@ var totalChips = make(map[string]int)
 
 var offeredChips = make(map[string]int)
 
-// SeeChips returns chip worth of player with provided name
-func SeeChips(name *string) int {
+// Chips returns chip worth of player with provided name
+func Chips(name *string) int {
 	return totalChips[*name]
 }
 
@@ -29,8 +29,8 @@ func ResetChips() {
 	}
 }
 
-// SeeBet returns chip worth of player with provided name
-func SeeBet(name *string) int {
+// Bet returns chip worth of player with provided name
+func Bet(name *string) int {
 	return offeredChips[*name]
 }
 

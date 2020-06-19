@@ -13,7 +13,7 @@ import (
 const MaxScore = 21
 
 // BlackjackBonus is bonus percentage for scoring blackjack
-const BlackjackBonus float64 = 1.5
+const BlackjackBonus float64 = 2
 
 type player struct {
 	name   string
@@ -23,17 +23,17 @@ type player struct {
 
 var dealer = player{name: "Mr. Dealer"}
 
-// Score represents final score of player
-type Score uint8
+// score represents final score of player
+type score uint8
 
 const (
-	push Score = iota
+	push score = iota
 	won
 	lost
 	blackjack
 )
 
-var results = make(map[string]Score)
+var results = make(map[string]score)
 
 type action uint8
 
@@ -54,7 +54,7 @@ func newGame() {
 	printGameIntro()
 	fmt.Print("Enter number of players > ")
 	var numerOfPlayers int
-	fmt.Scanln(&numerOfPlayers)
+	fmt.Scan(&numerOfPlayers)
 	fmt.Println()
 	players := createPlayers(&numerOfPlayers)
 	playingDeck := createDeck(&numerOfPlayers)
@@ -89,12 +89,12 @@ func createPlayers(n *int) []player {
 func offerChips(players *[]player) {
 	for _, player := range *players {
 		var offer int
-		playerChips := chips.SeeChips(&player.name)
+		playerChips := chips.Chips(&player.name)
 		fmt.Printf("%s place a bet (max. %d$) > ", player.name, playerChips)
-		fmt.Scanln(&offer)
+		fmt.Scan(&offer)
 		for offer > playerChips {
 			fmt.Printf("You don't have that much chips, %s, try again (max. %d$) > ", player.name, playerChips)
-			fmt.Scanln(&offer)
+			fmt.Scan(&offer)
 		}
 		fmt.Println()
 		chips.MakeBet(&player.name, offer)
@@ -115,18 +115,19 @@ func deal(p *[]player, deck *deck.Deck) {
 		}
 		dealer.cards = append(dealer.cards, card)
 	}
-	for _, player := range *p {
-		player.points = util.CalculatePoints(&player.cards)
+	for idx, player := range *p {
+		(*p)[idx].points = util.CalculatePoints(&player.cards)
 	}
 	dealer.points = util.CalculatePoints(&dealer.cards)
 	printScores(p)
 }
 
 func start(p *[]player, d *deck.Deck) {
-	for _, player := range *p {
-		invokeAction(&player, d)
+	for idx := range *p {
+		invokeAction(&(*p)[idx], d)
 	}
 	dealer.cards[1].Visible = true
+	dealer.points = util.CalculatePoints(&dealer.cards)
 	invokeAction(&dealer, d)
 	setResults(p)
 	finalizeBets()
@@ -141,7 +142,7 @@ func invokeAction(player *player, d *deck.Deck) {
 		fmt.Println("Blackjack!")
 		fmt.Println()
 	} else {
-		fmt.Scanln(&playerAction)
+		fmt.Scan(&playerAction)
 		fmt.Println()
 		switch playerAction {
 		case hit:
@@ -175,7 +176,7 @@ func hitAction(player *player, d *deck.Deck) {
 			fmt.Println()
 			break
 		}
-		fmt.Scanln(&playerAction)
+		fmt.Scan(&playerAction)
 		fmt.Println()
 		if playerAction == hit {
 			player.cards = append(player.cards, (*d).Draw(1)...)
@@ -187,7 +188,7 @@ func replay(players *[]player, d *deck.Deck) {
 	var choice uint8
 	fmt.Println()
 	printEndgameOptions()
-	fmt.Scanln(&choice)
+	fmt.Scan(&choice)
 	switch choice {
 	case 0:
 		startNewRound(players, d)
@@ -210,7 +211,7 @@ func startNewRound(players *[]player, d *deck.Deck) {
 		delete(results, k)
 	}
 	for idx, player := range *players {
-		if chips.SeeChips(&player.name) <= 0 {
+		if chips.Chips(&player.name) <= 0 {
 			*players = append((*players)[:idx], (*players)[idx+1:]...)
 			chips.Remove(&player.name)
 		}
@@ -232,16 +233,29 @@ func startNewRound(players *[]player, d *deck.Deck) {
 
 func setResults(players *[]player) {
 	for _, player := range *players {
-		if _, ok := results[player.name]; !ok {
-			playerPoints := player.points
-			dealerPoints := dealer.points
-			switch {
-			case playerPoints > dealerPoints:
-				results[player.name] = won
-			case playerPoints < dealerPoints:
-				results[player.name] = lost
-			case playerPoints == dealerPoints:
+		res, ok := results[player.name]
+		if ok {
+			if (res == blackjack || res == lost) && results[dealer.name] == res {
 				results[player.name] = push
+			}
+		} else {
+			switch results[dealer.name] {
+			case blackjack:
+				results[player.name] = lost
+			case lost:
+				results[player.name] = won
+			default:
+				playerPoints := player.points
+				dealerPoints := dealer.points
+				fmt.Println("playerPoints: ", playerPoints, " dealerPoints: ", dealerPoints)
+				switch {
+				case playerPoints > dealerPoints:
+					results[player.name] = won
+				case playerPoints < dealerPoints:
+					results[player.name] = lost
+				case playerPoints == dealerPoints:
+					results[player.name] = push
+				}
 			}
 		}
 	}
@@ -251,13 +265,11 @@ func finalizeBets() {
 	for name, score := range results {
 		switch score {
 		case push:
-			chips.AddChips(&name, chips.SeeBet(&name))
+			chips.AddChips(&name, chips.Bet(&name))
 		case blackjack:
-			chips.AddChips(&name, chips.SeeBet(&name)+int(float64(chips.SeeBet(&name))*BlackjackBonus))
+			chips.AddChips(&name, chips.Bet(&name)+int(float64(chips.Bet(&name))*BlackjackBonus))
 		case won:
-			chips.AddChips(&name, chips.SeeBet(&name)*2)
-		case lost:
-			chips.RemoveChips(&name, chips.SeeBet(&name))
+			chips.AddChips(&name, chips.Bet(&name)*2)
 		}
 	}
 }
@@ -288,16 +300,16 @@ func printActionChoices(player *player) {
 func printPlayerStats(player *player) {
 	fmt.Println(player)
 	fmt.Println("Hand: ", util.CardsAsString(&player.cards))
-	fmt.Printf("Bank: $%d\n", chips.SeeChips(&player.name))
-	fmt.Printf("Bet: $%d\n", chips.SeeBet(&player.name))
+	fmt.Printf("Bank: $%d\n", chips.Chips(&player.name))
+	fmt.Printf("Bet: $%d\n", chips.Bet(&player.name))
 	fmt.Printf("Points: %d\n", util.CalculatePoints(&player.cards))
 }
 
 func printPlayerInfoLine(player *player) {
 	fmt.Printf("%s [Bet: $%d (Bank: $%d)] (%d pts): %v\n",
 		player.name,
-		chips.SeeBet(&player.name),
-		chips.SeeChips(&player.name),
+		chips.Bet(&player.name),
+		chips.Chips(&player.name),
 		util.CalculatePoints(&player.cards),
 		util.CardsAsString(&player.cards))
 }
@@ -315,11 +327,11 @@ func printFinalScore() {
 		fmt.Printf("%s: ", name)
 		switch score {
 		case blackjack:
-			fmt.Printf("Won with Blackjack! (+$%d)", chips.SeeBet(&name)+int(float64(chips.SeeBet(&name))*BlackjackBonus))
+			fmt.Printf("Won with Blackjack! (+$%d)", int(float64(chips.Bet(&name))*BlackjackBonus))
 		case won:
-			fmt.Printf("Won! (+$%d)", chips.SeeBet(&name)*2)
+			fmt.Printf("Won! (+$%d)", chips.Bet(&name))
 		case lost:
-			fmt.Printf("Lost (-$%d)", chips.SeeBet(&name))
+			fmt.Printf("Lost (-$%d)", chips.Bet(&name))
 		case push:
 			fmt.Print("Push")
 		}
