@@ -207,28 +207,47 @@ func replay(players *[]player, d *deck.Deck) {
 
 func startNewRound(players *[]player, d *deck.Deck) {
 	fmt.Println()
-	for k := range results {
-		delete(results, k)
-	}
-	for idx, player := range *players {
-		if chips.Chips(&player.name) <= 0 {
-			*players = append((*players)[:idx], (*players)[idx+1:]...)
-			chips.Remove(&player.name)
-		}
-		(*players)[idx].cards = nil
-	}
-	dealer.cards = nil
-	if ((len(*players) * 4) + 4) > len(*d) {
-		fmt.Println("Shuffling new deck...")
-		fmt.Println()
-		deckSize := ((len(*players)*4)+4)/52 + 1
-		*d = deck.New(deck.Size(deckSize), deck.Shuffle())
-	}
+	resetResults()
+	removeBrokePlayers(players)
+	resetHand(players)
+	reshuffleDeck(len(*players), d)
 	chips.ResetBets()
 	offerChips(players)
 	deal(players, d)
 	start(players, d)
 	replay(players, d)
+}
+
+func resetResults() {
+	for k := range results {
+		delete(results, k)
+	}
+}
+
+func removeBrokePlayers(players *[]player) {
+	for i := 0; i < len(*players); i++ {
+		playerName := (*players)[i].name
+		if chips.Chips(&playerName) <= 0 {
+			*players = append((*players)[:i], (*players)[i+1:]...)
+			chips.Remove(&playerName)
+			i--
+		}
+	}
+}
+
+func resetHand(players *[]player) {
+	for idx := range *players {
+		(*players)[idx].cards = nil
+	}
+	dealer.cards = nil
+}
+
+func reshuffleDeck(playerSize int, d *deck.Deck) {
+	if ((playerSize * 4) + 4) > len(*d) {
+		fmt.Println("Shuffling new deck...")
+		fmt.Println()
+		*d = createDeck(&playerSize)
+	}
 }
 
 func setResults(players *[]player) {
