@@ -1,31 +1,10 @@
-package main
+package game
 
 import (
 	"testing"
 
-	util "github.com/nzorkic/blackjack/internal"
 	"github.com/nzorkic/deck"
 )
-
-func TestInitPoints(t *testing.T) {
-	newDeck := deck.New()
-	initPoints(&newDeck)
-	for _, card := range newDeck {
-		if card.Rank == deck.Jack || card.Rank == deck.Queen || card.Rank == deck.King {
-			if card.Point != 10 {
-				t.Errorf("Points for  %s are %d, should be %d", card.Rank, card.Point, 10)
-			}
-		}
-	}
-}
-
-func TestCreatePlayers(t *testing.T) {
-	n := 3
-	players := createPlayers(&n)
-	if len(players) != n {
-		t.Errorf("Error while creating players. Expected %d, got %d", n, len(players))
-	}
-}
 
 func TestDeal(t *testing.T) {
 	nOfPlayers := 5
@@ -47,17 +26,17 @@ func TestDeal(t *testing.T) {
 					player.name)
 			}
 		}
-		if player.points != util.CalculatePoints(&player.cards) {
+		if player.points != calculatePoints(&player.cards) {
 			t.Errorf("Final result after dealing is not correct. Expected %d, got %d",
-				util.CalculatePoints(&player.cards), results[player.name])
+				calculatePoints(&player.cards), results[player.name])
 		}
 	}
 	if len(dealer.cards) != nOfCardsDealt {
 		t.Errorf("Player with the name %s was dealt %d cards instead of %d",
 			dealer.name, len(dealer.cards), nOfCardsDealt)
 	}
-	if dealer.points != util.CalculatePoints(&dealer.cards) {
+	if dealer.points != calculatePoints(&dealer.cards) {
 		t.Errorf("Final result after dealing is not correct. Expected %d, got %d",
-			util.CalculatePoints(&dealer.cards), dealer.points)
+			calculatePoints(&dealer.cards), dealer.points)
 	}
 }
